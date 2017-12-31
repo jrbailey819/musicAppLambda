@@ -1,0 +1,22 @@
+{
+  "name": "musicapplambda",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "package": "tsc && del musicapplambda.zip && pack-zip"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.176.0",
+    "inversify": "^4.9.0",
+    "reflect-metadata": "^0.1.10",
+    "uuid": "^3.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^8.5.2",
+    "pack-zip": "^0.2.2"
+  }
+}
