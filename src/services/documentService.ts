@@ -1,11 +1,13 @@
+import { injectable } from 'inversify';
 import { Request } from 'aws-sdk';
 import { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import { AWSError } from 'aws-sdk/lib/error';
+import { DocumentServiceResult } from '../models/documentServiceResult';
 
-interface IDocumentService {
+export interface IDocumentService {
     put(tableName: string, 
         item: any, 
-        callback: (err: AWSError, data: DocumentClient.PutItemOutput) => void
+        callback?: (result: DocumentServiceResult) => void
     ): void;
 
     get(tableName: string,
@@ -14,7 +16,7 @@ interface IDocumentService {
     ): Request<DocumentClient.GetItemOutput, AWSError>;
 }
 
-
+@injectable()
 export class DocumentService implements IDocumentService {
     documentClient: DocumentClient;
     constructor() {
@@ -23,12 +25,21 @@ export class DocumentService implements IDocumentService {
 
     put(tableName: string,
         item: any,
-        callback?: (err: AWSError, data: DocumentClient.PutItemOutput) => void
-    ): Request<DocumentClient.PutItemOutput, AWSError> {
-        return this.documentClient.put({
+        callback?: (result: DocumentServiceResult) => void
+    ): void {
+        this.documentClient.put({
             TableName: tableName,
             Item: item
-        }, callback);
+        }, (err: AWSError, data: DocumentClient.PutItemOutput) => {
+            if (callback) {
+                if (err) {
+                    callback(new DocumentServiceResult(false, err.code, err.message));
+                }
+                else {
+                    callback(new DocumentServiceResult(true));
+                }    
+            }
+        });
     }
 
     get(tableName: string,
