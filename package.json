@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "package": "tsc && del musicapplambda.zip && pack-zip",
-    "debug": "node --nolazy --inspect-brk=9229 ./dist/test.js"
+    "debug": "tsc && node --nolazy --inspect-brk=9229 ./dist/test.js"
   },
   "author": "",
   "license": "ISC",

@@ -1,6 +1,7 @@
+import { DocumentServiceError } from './documentServiceError';
+
 export class DocumentServiceResult {
     constructor(
-        public isSuccessful: boolean,
-        public errorCode?: string,
-        public errorMessage?: string) {}
+        public error?: DocumentServiceError,
+        public data?: any) {}
 }

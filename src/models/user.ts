@@ -21,5 +21,14 @@ export class User {
 
         return data;
     }
+    static createUser(data: any): User {
+        return new User(
+            data.id, 
+            data.userName, 
+            data.firstName, 
+            data.lastName, 
+            data.createdDate, 
+            data.modifiedDate);
+    }
 }
 

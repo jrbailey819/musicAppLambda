@@ -3,6 +3,7 @@ import { Request } from 'aws-sdk';
 import { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import { AWSError } from 'aws-sdk/lib/error';
 import { DocumentServiceResult } from '../models/documentServiceResult';
+import { DocumentServiceError } from '../models/documentServiceError';
 
 export interface IDocumentService {
     put(tableName: string, 
@@ -12,7 +13,7 @@ export interface IDocumentService {
 
     get(tableName: string,
         id: string,
-        callback?: (err: AWSError, data: DocumentClient.GetItemOutput) => void
+        callback?: (result: DocumentServiceResult) => void
     ): Request<DocumentClient.GetItemOutput, AWSError>;
 }
 
@@ -33,10 +34,10 @@ export class DocumentService implements IDocumentService {
         }, (err: AWSError, data: DocumentClient.PutItemOutput) => {
             if (callback) {
                 if (err) {
-                    callback(new DocumentServiceResult(false, err.code, err.message));
+                    callback(new DocumentServiceResult(DocumentServiceError.createError(err)));
                 }
                 else {
-                    callback(new DocumentServiceResult(true));
+                    callback(new DocumentServiceResult());
                 }    
             }
         });
@@ -44,11 +45,20 @@ export class DocumentService implements IDocumentService {
 
     get(tableName: string,
         id: string,
-        callback?: (err: AWSError, data: DocumentClient.GetItemOutput) => void
+        callback?: (result: DocumentServiceResult) => void
     ): Request<DocumentClient.GetItemOutput, AWSError> {
         return this.documentClient.get({
             TableName: tableName,
             Key: { id: id }
-        }, callback);
+        }, (err: AWSError, data: DocumentClient.GetItemOutput) => {
+            if (err) {
+                callback(new DocumentServiceResult(DocumentServiceError.createError(err)));
+            }
+            else {
+                let result = new DocumentServiceResult();
+                result.data = data.Item;
+                callback(result);
+            }
+        });
     }
 }

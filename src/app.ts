@@ -4,48 +4,68 @@ import * as AWS from 'aws-sdk';
 import * as uuidv4 from 'uuid/v4';
 import "reflect-metadata";
 
-import { IDocumentService, DocumentService } from './services/documentService';
-import { IUserService, UserService } from './services/userService';
+import { Types } from './iocConfig';
 import { User } from './models/user';
 import { DocumentServiceResult } from './models/documentServiceResult';
-import { IocContainer, Types } from './iocConfig';
+import { IDocumentService, DocumentService } from './services/documentService';
+import { IUserService, UserService } from './services/userService';
+import { IocContainer } from './IocContainer';
+import { DocumentServiceError } from './models/documentServiceError';
 
 
 // Set the region
 AWS.config.update({ region: "us-west-2" });
 
 export let handler = (event, context, callback) => {    
-    //const documentClient = new AWS.DynamoDB.DocumentClient();
-    const documentService = new DocumentService();
-    const userService = new UserService(documentService);
-    //const userService = new UserService();
-    const documentService2 = IocContainer.get<IDocumentService>(Types.DocumentService);
-    if (documentService2) {
-        console.log("loaded document service");
-    }
-    else {
-        console.log("failed to load document service");
-    }
-    const userService2 = IocContainer.get<IUserService>(Types.UserService);
-    if (userService2) {
-        console.log("loaded user service");
-    }
-    else {
-        console.log("failed to load user service");
-    }
+    const userService = IocContainer.get<IUserService>(Types.UserService);
     const user = new User(uuidv4(), "john.doe", "John", "Doe", new Date(), null);
 
-    userService.add(user, (result: DocumentServiceResult) => {
+    userService.add(user, (error: DocumentServiceError) => {
         let resultText;
-        if (result.isSuccessful) {
+        if (error) {
+            console.log("Error", error);
+            resultText = "Failed to save user";
+        } else {
             console.log("Success");
             resultText = "Saved user";
-        } else {
-            console.log("Error", result);
-            resultText = "Failed to save user";
         }
 
         callback(null, resultText);
     });
+
+    // userService.get('e43bf1b9-d177-40d2-a639-b53c2aef0cff', (error: DocumentServiceError, user?: User) => {
+    //     let result;
+    //     if (error) {
+    //         result = "failed to get user";
+    //         console.error("Unable to read item. Error JSON:", JSON.stringify(error, null, 2));
+    //     } else {
+    //         result = "get successful";
+    //         console.log("GetItem succeeded:", JSON.stringify(user, null, 2));
+    //     }
+
+    //     callback(null, result);
+    // })
+
+    // var docClient = new AWS.DynamoDB.DocumentClient()
+    
+    // var table = "user";
+    
+    // var id = 'e43bf1b9-d177-40d2-a639-b53c2aef0cff';
+    
+    // var params = {
+    //     TableName: table,
+    //     Key:{
+    //         "id": id
+    //     }
+    // };
+    
+    // docClient.get(params, function(err, data) {
+    //     if (err) {
+    //         console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
+    //     } else {
+    //         console.log("GetItem succeeded:", JSON.stringify(data, null, 2));
+    //     }
+    //     callback(null, JSON.stringify(data));
+    // });
 };
 
